@@ -40,6 +40,11 @@ function abrirModalExtra() {
         <button class="cancel" id="cancelar-extra">Cancelar</button>
         <button class="confirm" id="salvar-extra">Salvar</button>
       </div>
+      ${
+        extraAtual.nome
+          ? `<button class="btn-danger-sm" id="excluir-extra" style="width:100%;margin-top:12px;">Excluir Extra deste mês</button>`
+          : ""
+      }
     </div>
   `,
     {
@@ -54,6 +59,34 @@ function abrirModalExtra() {
             return;
           }
           await salvarExtra(nome, descricao, meta);
+          fecharModal();
+        });
+        const btnExcluir = overlay.querySelector("#excluir-extra");
+        if (btnExcluir) {
+          btnExcluir.addEventListener("click", abrirConfirmacaoExcluir);
+        }
+      }
+    }
+  );
+}
+
+function abrirConfirmacaoExcluir() {
+  abrirModal(
+    `
+    <div class="modal">
+      <h3>Excluir Extra?</h3>
+      <p class="section-sub" style="margin:-6px 0 4px;">Isso apaga o nome, descrição, meta e o valor já arrecadado deste Extra. Não afeta as contribuições dos integrantes.</p>
+      <div class="modal-actions">
+        <button class="cancel" id="cancelar-exclusao">Cancelar</button>
+        <button class="confirm" id="confirmar-exclusao" style="background:var(--red-500);">Excluir</button>
+      </div>
+    </div>
+  `,
+    {
+      onMount: (overlay) => {
+        overlay.querySelector("#cancelar-exclusao").addEventListener("click", fecharModal);
+        overlay.querySelector("#confirmar-exclusao").addEventListener("click", async () => {
+          await excluirExtra();
           fecharModal();
         });
       }
@@ -72,4 +105,15 @@ async function salvarExtra(nome, descricao, meta) {
     eventos: arrayUnion({ tipo: "extra", dia: hojeISO(), pessoa: Estado.usuario.nome, extraNome: nome })
   });
   toast("Extra atualizado!");
+}
+
+async function excluirExtra() {
+  const ref = getMesRef();
+  await updateDoc(ref, {
+    "extra.nome": "",
+    "extra.descricao": "",
+    "extra.meta": 0,
+    "extra.arrecadado": 0
+  });
+  toast("Extra excluído.");
 }
