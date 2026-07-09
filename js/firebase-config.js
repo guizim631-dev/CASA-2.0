@@ -1,8 +1,3 @@
-// =========================================================
-// Firebase — configuração central
-// SUBSTITUA os valores abaixo pelas chaves do SEU projeto Firebase
-// (Console Firebase > Configurações do projeto > Seus apps > SDK config)
-// =========================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -16,12 +11,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyD8LTKq-tvENZXkr3Z14Nj0eyoFXDn7Lv4",
+  authDomain: "casa-financas-2026.firebaseapp.com",
+  projectId: "casa-financas-2026",
+  storageBucket: "casa-financas-2026.firebasestorage.app",
+  messagingSenderId: "817578432910",
+  appId: "1:817578432910:web:5496fe373885305755ecdf"
 };
 
 export const app = initializeApp(firebaseConfig);
@@ -58,3 +53,5 @@ export const CONTAS_FIXAS = [
   { id: "luz", nome: "Luz", icone: "⚡" },
   { id: "internet", nome: "Internet", icone: "📶" }
 ];
+
+
