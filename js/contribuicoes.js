@@ -47,6 +47,9 @@ export function renderContribuicoes(container) {
   container.querySelectorAll("[data-add]").forEach((btn) => {
     btn.addEventListener("click", () => abrirModalContribuicao(btn.dataset.add));
   });
+  container.querySelectorAll("[data-remover]").forEach((btn) => {
+    btn.addEventListener("click", () => abrirModalRemoverContribuicao(btn.dataset.remover));
+  });
 
   container.querySelectorAll("[data-info='mercado']").forEach((btn) => {
     btn.addEventListener("click", () =>
@@ -79,7 +82,14 @@ function cartaoIntegrante(chave, membro, valor) {
           ? `<div class="meta-concluida">🎉 Parabéns! Meta concluída.</div>`
           : `<div class="member-remaining" style="margin-top:8px;">Faltam ${formatBRL(restante)}</div>`
       }
-      ${souEu ? `<button class="btn-add" data-add="${chave}">Adicionar contribuição</button>` : ""}
+      ${
+        souEu
+          ? `<div style="display:flex;gap:10px;margin-top:14px;">
+              <button class="btn-add" data-add="${chave}" style="margin-top:0;flex:1;">Adicionar</button>
+              <button class="btn-ghost" data-remover="${chave}" style="flex:1;">Remover</button>
+            </div>`
+          : ""
+      }
     </div>
   `;
 }
@@ -122,7 +132,70 @@ function abrirModalContribuicao(chave) {
   );
 }
 
-async function confirmarContribuicao(chave, valor, destinarExtra) {
+function abrirModalRemoverContribuicao(chave) {
+  const membro = MEMBROS[chave];
+  const valorAtual = Estado.mesAtual?.contribuicoes?.[chave] || 0;
+  abrirModal(
+    `
+    <div class="modal">
+      <h3>Remover contribuição — ${membro.nome}</h3>
+      <p class="section-sub" style="margin:-6px 0 14px;">Contribuído até agora: ${formatBRL(valorAtual)}</p>
+      <div class="field">
+        <label for="valor-remover">Valor a remover (R$)</label>
+        <input type="number" id="valor-remover" min="0" step="0.01" placeholder="0,00" inputmode="decimal" />
+      </div>
+      <div class="field" style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="remover-extra" style="width:auto;" />
+        <label for="remover-extra" style="margin:0;">Remover também do Extra deste mês</label>
+      </div>
+      <div class="modal-actions">
+        <button class="cancel" id="cancelar-remover">Cancelar</button>
+        <button class="confirm" id="confirmar-remover" style="background:var(--red-500);">Remover</button>
+      </div>
+    </div>
+  `,
+    {
+      onMount: (overlay) => {
+        overlay.querySelector("#cancelar-remover").addEventListener("click", fecharModal);
+        overlay.querySelector("#confirmar-remover").addEventListener("click", async () => {
+          const valor = parseFloat(overlay.querySelector("#valor-remover").value);
+          if (!valor || valor <= 0) {
+            toast("Digite um valor válido.");
+            return;
+          }
+          if (valor > valorAtual) {
+            toast(`O valor não pode ser maior que ${formatBRL(valorAtual)}.`);
+            return;
+          }
+          const removerExtra = overlay.querySelector("#remover-extra").checked;
+          await confirmarRemocaoContribuicao(chave, valor, removerExtra);
+          fecharModal();
+        });
+      }
+    }
+  );
+}
+
+async function confirmarRemocaoContribuicao(chave, valor, removerExtra) {
+  const ref = getMesRef();
+  const extraAtual = Estado.mesAtual?.extra?.arrecadado || 0;
+  const updateData = {
+    [`contribuicoes.${chave}`]: increment(-valor),
+    eventos: arrayUnion({
+      tipo: "remocao_contribuicao",
+      dia: hojeISO(),
+      pessoa: MEMBROS[chave].nome,
+      valor: -valor
+    })
+  };
+  if (removerExtra) {
+    updateData["extra.arrecadado"] = increment(-Math.min(valor, extraAtual));
+  }
+  await updateDoc(ref, updateData);
+  toast("Contribuição removida.");
+}
+
+
   const ref = getMesRef();
   const updateData = {
     [`contribuicoes.${chave}`]: increment(valor),
