@@ -45,7 +45,7 @@ function desenhar(container) {
       <div class="cal-day ${isHoje ? "today" : ""}" data-dia="${d}">
         ${d}
         <div class="dots">
-          ${tipos.map((t) => `<span class="cal-dot ${t === "contribuicao" ? "contrib" : t === "conta" ? "conta" : "extra"}"></span>`).join("")}
+          ${tipos.map((t) => `<span class="cal-dot ${t === "contribuicao" || t === "remocao_contribuicao" ? "contrib" : t === "conta" ? "conta" : "extra"}"></span>`).join("")}
         </div>
       </div>`;
   }
@@ -97,6 +97,9 @@ function desenharDetalheDia(container, eventos) {
     .map((ev) => {
       if (ev.tipo === "contribuicao") {
         return `<div class="hist-row"><span>💰 ${ev.pessoa} contribuiu</span><span>R$ ${ev.valor.toFixed(2)}</span></div>`;
+      }
+      if (ev.tipo === "remocao_contribuicao") {
+        return `<div class="hist-row"><span>↩️ ${ev.pessoa} removeu contribuição</span><span>R$ ${Math.abs(ev.valor).toFixed(2)}</span></div>`;
       }
       if (ev.tipo === "conta") {
         return `<div class="hist-row"><span>✅ ${ev.contaNome} paga por ${ev.pessoa}</span><span>${formatDataBR(ev.dia)}</span></div>`;
