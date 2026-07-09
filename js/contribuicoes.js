@@ -196,6 +196,7 @@ async function confirmarRemocaoContribuicao(chave, valor, removerExtra) {
 }
 
 
+async function confirmarContribuicao(chave, valor, destinarExtra) {
   const ref = getMesRef();
   const updateData = {
     [`contribuicoes.${chave}`]: increment(valor),
